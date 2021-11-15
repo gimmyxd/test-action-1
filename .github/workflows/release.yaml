@@ -18,7 +18,7 @@ jobs:
       uses: timheuer/base64-to-file@v1
       with:
         fileName: 'secrets.json'
-        encodedString: ${{ secrets.PUSH_KEY }}
+        encodedString: ${{ secrets.ASERTO_ENG_PUSH_KEY }}
 
     - name: get password
       id: password
