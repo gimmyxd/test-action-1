@@ -1,0 +1,95 @@
+name: policy-build-release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  release_policy:
+    runs-on: ubuntu-latest
+    name: build
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get secrets
+      id: write_file
+      uses: timheuer/base64-to-file@v1
+      with:
+        fileName: 'secrets.json'
+        encodedString: ${{ secrets.PUSH_KEY }}
+
+    - name: get password
+      id: password
+      uses: notiz-dev/github-action-json-property@release
+      with:
+        path: ${{ steps.write_file.outputs.filePath }}
+        prop_path: 'password'
+
+    - name: get username
+      id: username
+      uses: notiz-dev/github-action-json-property@release
+      with:
+        path: ${{ steps.write_file.outputs.filePath }}
+        prop_path: 'username'
+
+    - name: Policy Login
+      id: policy-login
+      uses: opcr-io/policy-login-action@v1
+      with:
+        username: ${{steps.username.outputs.prop}}
+        password: ${{steps.password.outputs.prop}}
+
+    # - name: Policy Build
+    #   id: policy-build
+    #   uses: opcr-io/policy-build-action@v1
+    #   with:
+    #     src: src
+    #     tag: build-image:${{ steps.sver.outputs.version }}
+    #     revision: "$GITHUB_SHA"
+
+    # - name: Policy Tag
+    #   id: policy-tag
+    #   uses: opcr-io/policy-tag-action@v1
+    #   with:
+    #     source_tag: build-image:${{ steps.sver.outputs.version }}
+    #     target_tag: policy-test/policy-test:${{ steps.sver.outputs.version }}
+
+    # - name: Policy Push
+    #   id: policy-push
+    #   uses: opcr-io/policy-push-action@v1
+    #   with:
+    #     tag: policy-test/policy-test:${{ steps.sver.outputs.version }}
+
+    # - name: Policy Remove
+    #   id: policy-rm
+    #   uses: opcr-io/policy-rm-action@v1
+    #   with:
+    #     tag: policy-test/policy-test:${{ steps.sver.outputs.version }}
+
+    # - name: Policy Pull
+    #   id: policy-pull
+    #   uses: opcr-io/policy-pull-action@v1
+    #   with:
+    #     tag: policy-test/policy-test:${{ steps.sver.outputs.version }}
+
+    # - name: Create out directory
+    #   run: |
+    #     mkdir -p $GITHUB_WORKSPACE/out
+    #     ls -ali $GITHUB_WORKSPACE
+
+    # - name: Policy Save
+    #   id: policy-save
+    #   uses: opcr-io/policy-save-action@v1
+    #   with:
+    #     tag: policy-test/policy-test:${{ steps.sver.outputs.version }}
+    #     file: $GITHUB_WORKSPACE/out/bundle.tar.gz
+
+    # - name: Dump bundle
+    #   run: |
+    #     tar -tvf $GITHUB_WORKSPACE/out/bundle.tar.gz
+
+    # - name: Policy Logout
+    #   id: policy-logout
+    #   uses: opcr-io/policy-logout-action@v1
